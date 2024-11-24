@@ -1,0 +1,35 @@
+version: '3.4'
+
+networks:
+  webapp:
+
+services:
+  DatabaseMysql:
+    container_name: app-db-mysql
+    image: dungdeveloper777/mysql
+    ports:
+      - 3009:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=cinema
+    volumes:
+      - ./Databaseupgit.sql:/docker-entrypoint-initdb.d/Databaseupgit.sql
+    networks:
+      - webapp
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root --password=1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend-cinema:
+    container_name: backend-cinema
+    image: dungdeveloper777/backend-cinema
+    ports:
+      - 5062:8080
+    depends_on:
+      - DatabaseMysql
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=DatabaseMysql;Port=3306;Database=cinema;Username=root;Password=1234
+    networks:
+      - webapp
